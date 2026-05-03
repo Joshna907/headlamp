@@ -111,6 +111,15 @@ function replaceUseId(node: any) {
         'xterm-dom-renderer-owner'
       );
     }
+
+    if ((node.tagName === 'STYLE' || node.nodeName === 'STYLE') && node.textContent) {
+      // Replace dynamic xterm owner IDs and animations in style tags
+      node.textContent = node.textContent
+        .replace(/xterm-dom-renderer-owner-\d+/g, 'xterm-dom-renderer-owner-ID')
+        .replace(/blink_underline_\d+/g, 'blink_underline_ID')
+        .replace(/blink_bar_\d+/g, 'blink_bar_ID')
+        .replace(/blink_block_\d+/g, 'blink_block_ID');
+    }
   }
 
   // Recursively update child nodes
