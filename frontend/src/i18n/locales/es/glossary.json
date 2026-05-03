@@ -244,12 +244,6 @@
   "Provisioner": "Proveedor",
   "Volume Binding Mode": "Volume Binding Mode",
   "Allow Volume Expansion": "Permitir Expansión de Volume",
-  "Pending": "Pendiente",
-  "Available": "Disponible",
-  "Bound": "Vinculado",
-  "Released": "Liberado",
-  "Failed": "Fallido",
-  "Lost": "Perdido",
   "Driver Name": "",
   "This resource is only effective for compatible CSI drivers that support mutable volume attributes.": "",
   "Claim": "Claim",
@@ -274,5 +268,11 @@
   "Reinvocation Policy": "Política de Reinvocación",
   "API Versions": "Versiones de API",
   "RollingUpdate. Max unavailable: {{ maxUnavailable }}, max surge: {{ maxSurge }}": "RollingUpdate. Máx. indisponibles: {{ maxUnavailable }}, máx. \"surge\": {{ maxSurge }}",
-  "Strategy Type": "Tipo de Estrategia"
+  "Strategy Type": "Tipo de Estrategia",
+  "Pending": "Pendiente",
+  "Available": "Disponible",
+  "Bound": "Vinculado",
+  "Released": "Liberado",
+  "Failed": "Fallido",
+  "Lost": "Perdido"
 }

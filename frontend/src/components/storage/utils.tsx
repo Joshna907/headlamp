@@ -28,9 +28,15 @@ export function StatusLabelByPhase(phase: string, t: (key: string) => string) {
 
   return (
     <StatusLabel
-      status={phase === 'Bound' ? 'success' : phase === 'Available' ? 'warning' : 'error'}
+      status={
+        phase === 'Bound'
+          ? 'success'
+          : phase === 'Available' || phase === 'available'
+          ? 'warning'
+          : 'error'
+      }
     >
-      {phaseMap[phase] || phase}
+      {phaseMap[phase] || phaseMap[phase.charAt(0).toUpperCase() + phase.slice(1)] || phase}
     </StatusLabel>
   );
 }
