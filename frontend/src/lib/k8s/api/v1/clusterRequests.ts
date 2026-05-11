@@ -159,11 +159,20 @@ export async function clusterRequest(
 
   let url = combinePath(getAppUrl(), fullPath);
   url += asQuery(queryParams);
-  const requestData = {
-    signal: controller.signal,
+  const requestData: RequestInit = {
     credentials: 'include' as RequestCredentials,
     ...opts,
   };
+
+  // Only add the signal if it's an instance of the global AbortSignal and we are not in tests.
+  // This avoids TypeErrors in some test environments (like JSDOM vs Node Fetch).
+  if (
+    !import.meta.env.UNDER_TEST &&
+    typeof AbortSignal !== 'undefined' &&
+    controller.signal instanceof AbortSignal
+  ) {
+    requestData.signal = controller.signal;
+  }
   if (isBackstage()) {
     requestData.headers = addBackstageAuthHeaders(requestData.headers);
   }

@@ -28,6 +28,11 @@ export default mergeConfig(
       env: {
         UNDER_TEST: 'true',
       },
+      environmentOptions: {
+        jsdom: {
+          url: 'http://localhost:4466/',
+        },
+      },
       alias: [
         {
           find: /^monaco-editor$/,

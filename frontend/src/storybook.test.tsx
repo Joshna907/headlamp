@@ -104,12 +104,36 @@ function replaceUseId(node: any) {
       }
     }
 
-    if (node.className && typeof node.className === 'string') {
+    const className =
+      typeof node.className === 'string' ? node.className : node.getAttribute?.('class') || '';
+
+    if (className && typeof className === 'string') {
       // Replace dynamic xterm owner classes with a fixed value
-      node.className = node.className.replace(
+      const newClassName = className.replace(
         /xterm-dom-renderer-owner-\d+/g,
-        'xterm-dom-renderer-owner'
+        'xterm-dom-renderer-owner-ID'
       );
+      if (newClassName !== className) {
+        if (typeof node.className === 'string') {
+          node.className = newClassName;
+        } else {
+          node.setAttribute('class', newClassName);
+        }
+      }
+    }
+
+    if ((node.tagName === 'STYLE' || node.nodeName === 'STYLE') && node.textContent) {
+      // Replace dynamic xterm owner IDs and animations in style tags
+      const content = node.textContent;
+      const newContent = content
+        .replace(/xterm-dom-renderer-owner-\d+/g, 'xterm-dom-renderer-owner-ID')
+        .replace(/blink_underline_\d+/g, 'blink_underline_ID')
+        .replace(/blink_bar_\d+/g, 'blink_bar_ID')
+        .replace(/blink_block_\d+/g, 'blink_block_ID');
+
+      if (newContent !== content) {
+        node.textContent = newContent;
+      }
     }
   }
 
@@ -132,8 +156,8 @@ describe('Storybook Tests', () => {
     const meta = storyFile.default;
     const title = meta.title || componentName;
 
-    if (options.storyKindRegex.test(title) || meta.parameters?.storyshots?.disable) {
-      // Skip component tests if they are disabled
+    if (meta.parameters?.storyshots?.disable || options.storyKindRegex.test(title)) {
+      // Skip component tests if they are disabled or excluded by the configured title filter
       return;
     }
 
@@ -230,7 +254,7 @@ describe('Storybook Tests', () => {
           );
 
           // Get rid of random id's in the ouput
-          replaceUseId(document);
+          replaceUseId(document.body);
 
           document.body.removeAttribute('style');
 

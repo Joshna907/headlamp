@@ -61,6 +61,11 @@ export function getAppUrl(): string {
     useLocalhost = true;
   }
 
+  if (import.meta.env.UNDER_TEST) {
+    backendPort = 4466;
+    useLocalhost = true;
+  }
+
   if (useLocalhost) {
     url = `http://localhost:${backendPort}`;
   } else {

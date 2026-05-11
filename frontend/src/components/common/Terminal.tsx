@@ -69,6 +69,18 @@ export default function Terminal(props: TerminalProps) {
     available: getAvailableShells(),
     currentIdx: 0,
   });
+
+  React.useEffect(() => {
+    setContainer(getDefaultContainer(item));
+    if (!isAttach) {
+      setShells({
+        available: getAvailableShells(),
+        currentIdx: 0,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.metadata?.uid]);
+
   const { t } = useTranslation(['translation', 'glossary']);
 
   // @todo: Give the real exec type when we have it.
@@ -140,15 +152,16 @@ export default function Terminal(props: TerminalProps) {
     fitAddon.fit();
   }
 
-  function send(channel: number, data: string) {
-    if (!execOrAttachRef.current) {
+  function send(channel: number, data: string, execOverride?: execReturn) {
+    const currentExec = execOverride || execOrAttachRef.current;
+    if (!currentExec) {
       return;
     }
-    const socket = execOrAttachRef.current.getSocket();
+    const socket = currentExec.getSocket();
 
     // We should only send data if the socket is ready.
     if (!socket || socket.readyState !== 1) {
-      console.debug('Could not send data to exec: Socket not ready...', socket);
+      console.debug('Could not send data to exec: socket not ready.', socket);
       return;
     }
 
@@ -158,8 +171,8 @@ export default function Terminal(props: TerminalProps) {
     socket.send(buffer);
   }
 
-  function onData(xtermc: XTerminalConnected, bytes: ArrayBuffer) {
-    if (!execOrAttachRef.current) return;
+  function onData(xtermc: XTerminalConnected, bytes: ArrayBuffer, exec: execReturn) {
+    if (!exec) return;
     const xterm = xtermc.xterm;
     // Only show data from stdout, stderr and server error channel.
     const channel: Channel = new Int8Array(bytes.slice(0, 1))[0];
@@ -178,7 +191,7 @@ export default function Terminal(props: TerminalProps) {
     if (!xtermc.connected) {
       xterm.clear();
       (async function () {
-        send(4, `{"Width":${xterm.cols},"Height":${xterm.rows}}`);
+        send(4, `{"Width":${xterm.cols},"Height":${xterm.rows}}`, exec);
       })();
       // On server error, don't set it as connected
       if (channel !== Channel.ServerError) {
@@ -280,7 +293,7 @@ export default function Terminal(props: TerminalProps) {
       }
 
       const isWindows = ['Windows', 'Win16', 'Win32', 'WinCE'].indexOf(navigator?.platform) >= 0;
-      xtermRef.current = {
+      const xtermc = {
         xterm: new XTerminal({
           cursorBlink: true,
           cursorStyle: 'underline',
@@ -292,32 +305,49 @@ export default function Terminal(props: TerminalProps) {
         connected: false,
         reconnectOnEnter: false,
       };
+      xtermRef.current = xtermc;
 
       fitAddonRef.current = new FitAddon();
       xtermRef.current.xterm.loadAddon(fitAddonRef.current);
 
+      let cancelled = false;
+
       (async function () {
+        let exec: execReturn;
         if (isAttach) {
-          xtermRef?.current?.xterm.writeln(
+          xtermc.xterm.writeln(
             t('Trying to attach to the container {{ container }}…', { container }) + '\n'
           );
 
-          execOrAttachRef.current = await item.attach(
-            container,
-            items => onData(xtermRef.current!, items),
-            { failCb: () => shellConnectFailed(xtermRef.current!) }
-          );
+          exec = await item.attach(container, items => onData(xtermc, items, exec), {
+            failCb: () => {
+              if (!cancelled) {
+                shellConnectFailed(xtermc);
+              }
+            },
+          });
         } else {
           const command = getCurrentShellCommand();
 
-          xtermRef?.current?.xterm.writeln(t('Trying to run "{{command}}"…', { command }) + '\n');
+          xtermc.xterm.writeln(t('Trying to run "{{command}}"…', { command }) + '\n');
 
-          execOrAttachRef.current = await item.exec(
-            container,
-            items => onData(xtermRef.current!, items),
-            { command: [command], failCb: () => shellConnectFailed(xtermRef.current!) }
-          );
+          exec = await item.exec(container, items => onData(xtermc, items, exec), {
+            command: [command],
+            failCb: () => {
+              if (!cancelled) {
+                shellConnectFailed(xtermc);
+              }
+            },
+          });
         }
+
+        if (cancelled) {
+          exec.cancel();
+          return;
+        }
+
+        execOrAttachRef.current = exec;
+
         setupTerminal(terminalContainerRef, xtermRef.current!.xterm, fitAddonRef.current!);
       })();
 
@@ -328,6 +358,7 @@ export default function Terminal(props: TerminalProps) {
       window.addEventListener('resize', handler);
 
       return function cleanup() {
+        cancelled = true;
         xtermRef.current?.xterm.dispose();
         execOrAttachRef.current?.cancel();
         execOrAttachRef.current = null;
@@ -335,7 +366,7 @@ export default function Terminal(props: TerminalProps) {
       };
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [container, terminalContainerRef, shells, props.open]
+    [container, terminalContainerRef, shells, props.open, item]
   );
 
   React.useEffect(
@@ -347,16 +378,6 @@ export default function Terminal(props: TerminalProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.open]
   );
-
-  React.useEffect(() => {
-    if (!isAttach && shells.available.length === 0) {
-      setShells({
-        available: getAvailableShells(),
-        currentIdx: 0,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [item]);
 
   function getAvailableShells() {
     const selector = item.spec?.nodeSelector || {};
@@ -386,6 +407,7 @@ export default function Terminal(props: TerminalProps) {
           channel,
           text,
           error: e,
+          errorObj: e,
         });
       }
     }
@@ -405,6 +427,7 @@ export default function Terminal(props: TerminalProps) {
           channel,
           text,
           error: e,
+          errorObj: e,
         });
       }
     }
