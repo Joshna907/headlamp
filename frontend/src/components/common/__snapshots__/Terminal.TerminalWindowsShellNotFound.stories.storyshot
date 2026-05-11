@@ -215,19 +215,12 @@
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     >
                       <span>
-                        user@mock-pod:~$ Failed to run "cmd.exe"…
+                        Trying to run "powershell.exe"…
                       </span>
                     </div>
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     />
-                    <div
-                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                        Press the enter key to reconnect.
-                      </span>
-                    </div>
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     >
@@ -237,6 +230,9 @@
                          
                       </span>
                     </div>
+                    <div
+                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
+                    />
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     />

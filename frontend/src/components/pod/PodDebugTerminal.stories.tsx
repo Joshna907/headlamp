@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { Meta, StoryFn } from '@storybook/react';
 import { http, HttpResponse } from 'msw';
+import React from 'react';
 import Pod from '../../lib/k8s/pod';
 import { TestContext } from '../../test';
 import { PodDebugTerminal } from './PodDebugTerminal';

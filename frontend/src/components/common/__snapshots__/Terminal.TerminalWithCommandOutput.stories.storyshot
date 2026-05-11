@@ -215,56 +215,33 @@
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     >
                       <span>
-                        user@mock-pod:~$ ls -la
+                        Trying to run "bash"…
                       </span>
                     </div>
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                        total 12
-                      </span>
-                    </div>
+                    />
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     >
-                      <span>
-                                drwxr-xr-x  2 root root 4096 Jan  1 00:00 .
-                      </span>
-                    </div>
-                    <div
-                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                                                                           drwxr-xr-x 5 root root 4096 J
-                      </span>
-                    </div>
-                    <div
-                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                        an  1 00:00 ..
-                      </span>
-                    </div>
-                    <div
-                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                                      -rw-r--r--  1 root root  220 Jan  1 00:00 .bashrc
-                      </span>
-                    </div>
-                    <div
-                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
-                    >
-                      <span>
-                        user@mock-pod:~$ 
-                      </span>
                       <span
                         class="xterm-cursor xterm-cursor-blink xterm-cursor-underline"
                       >
                          
                       </span>
                     </div>
+                    <div
+                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
+                    />
+                    <div
+                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
+                    />
+                    <div
+                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
+                    />
+                    <div
+                      style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
+                    />
                     <div
                       style="width: 0px; height: 0px; line-height: 0px; overflow: hidden;"
                     />
