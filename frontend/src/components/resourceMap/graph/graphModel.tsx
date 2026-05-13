@@ -79,7 +79,7 @@ export interface GraphEdge {
   /** ID of the target Node */
   target: string;
   /** Optional label */
-  label?: ReactNode;
+  label?: string;
   /** Custom data for this node */
   data?: any;
 }
@@ -176,9 +176,11 @@ export type GraphSource = {
 );
 
 export interface Relation {
+  id: string;
   fromSource: string;
   toSource?: string;
   predicate: (from: GraphNode, to: GraphNode) => boolean;
+  label?: string;
 }
 
 /**

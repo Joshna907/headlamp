@@ -33,7 +33,7 @@ import {
   DetailsViewsSectionProcessor,
   setDetailsViewSection,
 } from '../components/DetailsViewSection/detailsViewSectionSlice';
-import { GraphSource } from '../components/resourceMap/graph/graphModel';
+import { GraphSource, Relation } from '../components/resourceMap/graph/graphModel';
 import { Glance, graphViewSlice, IconDefinition } from '../components/resourceMap/graphViewSlice';
 import { DefaultSidebars, SidebarEntryProps } from '../components/Sidebar';
 import { setSidebarItem, setSidebarItemFilter } from '../components/Sidebar/sidebarSlice';
@@ -148,6 +148,7 @@ export type {
   GraphSource,
   IconDefinition,
   OverviewChartsProcessor,
+  Relation,
 };
 export const DefaultHeadlampEvents = HeadlampEventType;
 export const DetailsViewDefaultHeaderActions = DefaultHeaderAction;
@@ -1164,6 +1165,26 @@ export function registerProjectDeleteButton(projectDeleteButton: ProjectDeleteBu
  */
 export function registerProjectHeaderAction(projectHeaderAction: ProjectHeaderAction) {
   store.dispatch(addHeaderAction(projectHeaderAction));
+}
+
+/**
+ * Register a custom resource relation provider for the Resource Map
+ *
+ * @param relation - The Relation object to add
+ *
+ * @example
+ * ```tsx
+ * registerResourceRelationProvider({
+ *   id: 'deployment-secret',
+ *   fromSource: 'apps/Deployment',
+ *   toSource: 'Secret',
+ *   label: 'Uses Secret',
+ *   predicate: (from, to) => ...
+ * });
+ * ```
+ */
+export function registerResourceRelationProvider(relation: Relation) {
+  store.dispatch(graphViewSlice.actions.addRelation(relation));
 }
 
 export {

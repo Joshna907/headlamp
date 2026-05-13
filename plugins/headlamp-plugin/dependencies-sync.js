@@ -54,6 +54,7 @@ const dependenciesFrontDoesNotHave = new Set([
 const dependenciesToNotCopy = [
   '@storybook/test',
   'husky',
+  'remark-gfm',
   'typedoc',
   'typedoc-hugo-theme',
   'typedoc-plugin-markdown',
