@@ -219,7 +219,7 @@ func LoadFromCache(k8scache cache.Cache[string], isAllowed bool,
 			return false, writeErr
 		}
 
-		logger.Log(logger.LevelInfo, nil, nil, "serving from the cache with key "+key)
+		logger.Log(logger.LevelInfo, nil, nil, "serving from the cache with key "+redactCacheKey(key))
 
 		return true, nil
 	}
@@ -267,9 +267,31 @@ func StoreK8sResponseInCache(k8scache cache.Cache[string],
 				return err
 			}
 
-			logger.Log(logger.LevelInfo, nil, nil, "k8s resource was stored with the key "+key)
+			logger.Log(logger.LevelInfo, nil, nil, "k8s resource was stored with the key "+redactCacheKey(key))
 		}
 	}
 
 	return nil
+}
+
+// redactContextKey returns a redacted version of the context key to avoid leaking PII/sensitive info in logs.
+func redactContextKey(key string) string {
+	if len(key) <= 6 {
+		return key
+	}
+
+	return key[:6] + "...[redacted]"
+}
+
+// redactCacheKey returns a redacted version of the cache key (which contains the context key as its last segment).
+func redactCacheKey(key string) string {
+	parts := strings.SplitN(key, "+", 4)
+
+	if len(parts) >= 4 {
+		parts[3] = redactContextKey(parts[3])
+
+		return strings.Join(parts, "+")
+	}
+
+	return key
 }

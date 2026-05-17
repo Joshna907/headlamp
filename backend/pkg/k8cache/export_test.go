@@ -42,9 +42,14 @@ func ResetRegistries(keys ...string) {
 }
 
 // StoreTestRegistry populates both registries for test setup.
-func StoreTestRegistry(key string, cancel func()) {
+func StoreTestRegistry(key string, cancel context.CancelFunc) {
 	watcherRegistry.Store(key, struct{}{})
 	contextCancel.Store(key, cancel)
+}
+
+// StoreTestContextCancel stores a cancel function in the registry for tests.
+func StoreTestContextCancel(contextKey string, cancel context.CancelFunc) {
+	contextCancel.Store(contextKey, cancel)
 }
 
 // RegistryLoaded checks if a key exists in both registries.
