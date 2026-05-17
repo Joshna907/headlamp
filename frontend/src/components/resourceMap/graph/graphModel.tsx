@@ -79,7 +79,7 @@ export interface GraphEdge {
   /** ID of the target Node */
   target: string;
   /** Optional label */
-  label?: string;
+  label?: ReactNode;
   /** Custom data for this node */
   data?: any;
 }
