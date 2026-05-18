@@ -22,7 +22,9 @@ import { runCommand } from '../components/App/runCommand';
 import { setBrandingAppLogoComponent, themeSlice } from '../components/App/themeSlice';
 import { ClusterChooserProps, ClusterChooserType } from '../components/cluster/ClusterChooser';
 import {
+  addResourceStatusProvider,
   addResourceTableColumnsProcessor,
+  ResourceStatusProvider,
   TableColumnsProcessor,
 } from '../components/common/Resource/resourceTableSlice';
 import { SectionBox } from '../components/common/SectionBox';
@@ -148,6 +150,7 @@ export type {
   GraphSource,
   IconDefinition,
   OverviewChartsProcessor,
+  ResourceStatusProvider,
 };
 export const DefaultHeadlampEvents = HeadlampEventType;
 export const DetailsViewDefaultHeaderActions = DefaultHeaderAction;
@@ -274,6 +277,14 @@ export default class Registry {
       'Registry.registerClusterChooserComponent is deprecated. Please use registerClusterChooser.'
     );
     return registerClusterChooser(component);
+  }
+
+  /**
+   * Register a resource status provider.
+   * Allows plugins to return a status badge/pill Component for a given resource.
+   */
+  registerResourceStatusProvider(callback: ResourceStatusProvider) {
+    return registerResourceStatusProvider(callback);
   }
 }
 
@@ -1164,6 +1175,16 @@ export function registerProjectDeleteButton(projectDeleteButton: ProjectDeleteBu
  */
 export function registerProjectHeaderAction(projectHeaderAction: ProjectHeaderAction) {
   store.dispatch(addHeaderAction(projectHeaderAction));
+}
+
+/**
+ * Register a resource status provider.
+ * Allows plugins to return a status badge/pill Component for a given resource.
+ *
+ * @param callback - Callback function that receives a resource and returns a status badge component (e.g. a ResourceStatusBadge) or null.
+ */
+export function registerResourceStatusProvider(callback: ResourceStatusProvider) {
+  store.dispatch(addResourceStatusProvider(callback));
 }
 
 export {

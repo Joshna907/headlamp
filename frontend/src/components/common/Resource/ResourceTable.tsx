@@ -299,6 +299,32 @@ export function useThrottle(value: any, interval = 1000): any {
   return throttledValue;
 }
 
+function ResourceStatusBadges({ resource }: { resource: KubeObject }) {
+  const statusProviders =
+    useTypedSelector(state => state.resourceTable.resourceStatusProviders) || [];
+
+  const badges = statusProviders
+    .map((provider, index) => {
+      try {
+        const badge = provider(resource);
+        if (!badge) return null;
+        return <React.Fragment key={index}>{badge}</React.Fragment>;
+      } catch (err) {
+        console.error('Error rendering status provider:', err);
+        return null;
+      }
+    })
+    .filter(Boolean);
+
+  if (badges.length === 0) return null;
+
+  return (
+    <Box display="flex" alignItems="center" gap={0.5} ml={1}>
+      {badges}
+    </Box>
+  );
+}
+
 function ResourceTableContent<RowItem extends KubeObject>(props: ResourceTableProps<RowItem>) {
   const {
     columns,
@@ -456,7 +482,12 @@ function ResourceTableContent<RowItem extends KubeObject>(props: ResourceTablePr
               gridTemplate: 'auto',
               accessorFn: (item: RowItem) => item.metadata.name,
               Cell: ({ row }: { row: MRT_Row<RowItem> }) =>
-                row.original && <Link kubeObject={row.original} />,
+                row.original && (
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <Link kubeObject={row.original} />
+                    <ResourceStatusBadges resource={row.original} />
+                  </Box>
+                ),
             };
           case 'age':
             return {

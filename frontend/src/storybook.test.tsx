@@ -76,6 +76,22 @@ vi.mock('@monaco-editor/react', () => ({
   default: () => <div className="mock-monaco-editor" />,
 }));
 
+vi.mock('./lib/k8s', async importOriginal => {
+  const actual = await importOriginal<typeof import('./lib/k8s')>();
+  return {
+    ...actual,
+    useClustersVersion: (clusters: any[]) => {
+      const versions: any = {};
+      const errors: any = {};
+      (clusters || []).forEach(c => {
+        versions[c.name] = { gitVersion: 'v1.21.0' };
+        errors[c.name] = null;
+      });
+      return [versions, errors];
+    },
+  };
+});
+
 window.matchMedia = () => ({
   matches: false,
   addListener: () => {},

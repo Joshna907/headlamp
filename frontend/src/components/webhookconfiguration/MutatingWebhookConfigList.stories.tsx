@@ -79,6 +79,14 @@ Items.parameters = {
               metadata: {},
             })
         ),
+        http.post(
+          'http://localhost:4466/clusters/:cluster/apis/authorization.k8s.io/:version/selfsubjectaccessreviews',
+          () => HttpResponse.json({ status: { allowed: false } })
+        ),
+        http.post(
+          'http://localhost:4466/apis/authorization.k8s.io/:version/selfsubjectaccessreviews',
+          () => HttpResponse.json({ status: { allowed: false } })
+        ),
       ],
     },
   },
