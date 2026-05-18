@@ -3,6 +3,9 @@ version: 1
 default_agent: "@dev-agent"
 
 > **Consulted files (agent must populate before committing):**
+> - `/frontend/src/lib/k8s/api/v1/streamingApi.ts`
+> - `/frontend/src/lib/k8s/apiProxy/index.ts`
+> - `/frontend/src/plugin/__snapshots__/pluginLib.snapshot`
 >
 > **README.md files:**
 > - `/README.md` - Main project README

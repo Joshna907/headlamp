@@ -49,6 +49,8 @@ export {
   remove,
   request,
   type ClusterRequest,
+  type ClusterRequestOptions,
+  type RequestOptions,
   type ClusterRequestParams,
   type RequestParams,
 } from '../api/v1/clusterRequests';
@@ -60,9 +62,10 @@ export {
   streamResults,
   streamResultsForCluster,
   type StreamArgs,
-  type StreamResultsParams,
+  type StreamResultsOptions,
   type StreamResultsCb,
   type StreamErrCb,
+  type StreamResultsParams,
 } from '../api/v1/streamingApi';
 
 // API factory functions

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// @todo: Params is a confusing name for options, because params are also query params.
-
 import { addBackstageAuthHeaders } from '../../../../helpers/addBackstageAuthHeaders';
 import { isDebugVerbose } from '../../../../helpers/debugVerbose';
 import { getAppUrl } from '../../../../helpers/getAppUrl';
@@ -34,7 +32,7 @@ import type { QueryParameters } from './queryParameters';
 /**
  * Options for the request.
  */
-export interface RequestParams extends RequestInit {
+export interface RequestOptions extends RequestInit {
   /** Number of milliseconds to wait for a response. */
   timeout?: number;
   /** Is the request expected to receive JSON data? */
@@ -61,10 +59,17 @@ export interface ClusterRequest {
 /**
  * The options for `clusterRequest`.
  */
-export interface ClusterRequestParams extends RequestParams {
-  cluster?: string | null;
-  autoLogoutOnAuthError?: boolean;
-}
+export interface ClusterRequestOptions extends RequestOptions {}
+
+/**
+ * @deprecated Use `RequestOptions` instead.
+ */
+export type RequestParams = RequestOptions;
+
+/**
+ * @deprecated Use `ClusterRequestOptions` instead.
+ */
+export type ClusterRequestParams = ClusterRequestOptions;
 
 /**
  * @returns Auth type of the cluster, or an empty string if the cluster is not found.
@@ -83,7 +88,7 @@ export function getClusterAuthType(cluster: string): string {
  * treated as a request to the Kubernetes server of the currently defined (in the URL) cluster.
  *
  * @param path - The path to the API endpoint.
- * @param params - Optional parameters for the request.
+ * @param options - Optional options for the request.
  * @param autoLogoutOnAuthError - Whether to automatically log out the user if there is an authentication error.
  * @param useCluster - Whether to use the current cluster for the request.
  * @param queryParams - Optional query parameters for the request.
@@ -93,7 +98,7 @@ export function getClusterAuthType(cluster: string): string {
  */
 export async function request(
   path: string,
-  params: RequestParams = {},
+  options: RequestOptions = {},
   autoLogoutOnAuthError: boolean = true,
   useCluster: boolean = true,
   queryParams?: QueryParameters
@@ -102,18 +107,18 @@ export async function request(
   const cluster = (useCluster && getCluster()) || '';
 
   if (isDebugVerbose('k8s/apiProxy@request')) {
-    console.debug('k8s/apiProxy@request', { path, params, useCluster, queryParams });
+    console.debug('k8s/apiProxy@request', { path, options, useCluster, queryParams });
   }
 
-  return clusterRequest(path, { cluster, autoLogoutOnAuthError, ...params }, queryParams);
+  return clusterRequest(path, { cluster, autoLogoutOnAuthError, ...options }, queryParams);
 }
 
 /**
- * Sends a request to the backend. If the cluster is required in the params parameter, it will
+ * Sends a request to the backend. If the cluster is required in the options parameter, it will
  * be used as a request to the respective Kubernetes server.
  *
  * @param path - The path to the API endpoint.
- * @param params - Optional parameters for the request.
+ * @param options - Optional options for the request.
  * @param queryParams - Optional query parameters for the k8s request.
  *
  * @returns A Promise that resolves to the JSON response from the API server.
@@ -121,7 +126,7 @@ export async function request(
  */
 export async function clusterRequest(
   path: string,
-  params: ClusterRequestParams = {},
+  options: ClusterRequestOptions = {},
   queryParams?: QueryParameters
 ): Promise<any> {
   interface RequestHeaders {
@@ -133,15 +138,15 @@ export async function clusterRequest(
 
   const {
     timeout = DEFAULT_TIMEOUT,
-    cluster: paramsCluster,
+    cluster: optionsCluster,
     autoLogoutOnAuthError = true,
     isJSON = true,
-    ...otherParams
-  } = params;
+    ...otherOptions
+  } = options;
 
   const userID = getUserIdFromLocalStorage();
-  const opts: { headers: RequestHeaders } = Object.assign({ headers: {} }, otherParams);
-  const cluster = paramsCluster || '';
+  const opts: { headers: RequestHeaders } = Object.assign({ headers: {} }, otherOptions);
+  const cluster = optionsCluster || '';
 
   let fullPath = path;
   if (cluster) {
@@ -239,9 +244,9 @@ export function post(
   url: string,
   json: JSON | object | KubeObjectInterface,
   autoLogoutOnAuthError: boolean = true,
-  options: ClusterRequestParams = {}
+  options: ClusterRequestOptions = {}
 ) {
-  const { cluster: clusterName, ...requestOptions } = options;
+  const { cluster: clusterName, ...restOptions } = options;
   const body = JSON.stringify(json);
   const cluster = clusterName || getCluster() || '';
   return clusterRequest(url, {
@@ -250,7 +255,7 @@ export function post(
     headers: JSON_HEADERS,
     cluster,
     autoLogoutOnAuthError,
-    ...requestOptions,
+    ...restOptions,
   });
 }
 
@@ -258,9 +263,9 @@ export function patch(
   url: string,
   json: any,
   autoLogoutOnAuthError = true,
-  options: ClusterRequestParams = {}
+  options: ClusterRequestOptions = {}
 ) {
-  const { cluster: clusterName, ...requestOptions } = options;
+  const { cluster: clusterName, ...restOptions } = options;
   const body = JSON.stringify(json);
   const cluster = clusterName || getCluster() || '';
   const opts = {
@@ -269,7 +274,7 @@ export function patch(
     headers: { ...JSON_HEADERS, 'Content-Type': 'application/merge-patch+json' },
     autoLogoutOnAuthError,
     cluster,
-    ...requestOptions,
+    ...restOptions,
   };
   return clusterRequest(url, opts);
 }
@@ -289,9 +294,9 @@ export function jsonPatch(
   url: string,
   operations: Array<{ op: string; path: string; value?: any }>,
   autoLogoutOnAuthError = true,
-  options: ClusterRequestParams = {}
+  options: ClusterRequestOptions = {}
 ) {
-  const { cluster: clusterName, ...requestOptions } = options;
+  const { cluster: clusterName, ...restOptions } = options;
   const body = JSON.stringify(operations);
   const cluster = clusterName || getCluster() || '';
   const opts = {
@@ -300,7 +305,7 @@ export function jsonPatch(
     headers: { ...JSON_HEADERS, 'Content-Type': 'application/json-patch+json' },
     autoLogoutOnAuthError,
     cluster,
-    ...requestOptions,
+    ...restOptions,
   };
   return clusterRequest(url, opts);
 }
@@ -309,10 +314,10 @@ export function put(
   url: string,
   json: Partial<KubeObjectInterface>,
   autoLogoutOnAuthError = true,
-  requestOptions: ClusterRequestParams = {}
+  options: ClusterRequestOptions = {}
 ) {
   const body = JSON.stringify(json);
-  const { cluster: clusterName, ...restOptions } = requestOptions;
+  const { cluster: clusterName, ...restOptions } = options;
   const opts = {
     method: 'PUT',
     body,
@@ -324,8 +329,8 @@ export function put(
   return clusterRequest(url, opts);
 }
 
-export function remove(url: string, requestOptions: ClusterRequestParams = {}) {
-  const { cluster: clusterName, ...restOptions } = requestOptions;
+export function remove(url: string, options: ClusterRequestOptions = {}) {
+  const { cluster: clusterName, ...restOptions } = options;
   const cluster = clusterName || getCluster() || '';
   const opts = { method: 'DELETE', headers: JSON_HEADERS, cluster, ...restOptions };
   return clusterRequest(url, opts);
