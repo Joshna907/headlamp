@@ -82,17 +82,32 @@ export type AppBarActionsProcessor = {
   processor: AppBarActionProcessorType;
 };
 
+export interface ResourceAction {
+  id: string;
+  label: string;
+  icon?: string;
+  type?: 'primary' | 'secondary';
+  visible?: boolean | ((resource: KubeObject) => boolean);
+  action: (resource: KubeObject) => void | Promise<void>;
+}
+
+export type ResourceActionProvider = (
+  resource: KubeObject
+) => ResourceAction[] | ResourceAction | null;
+
 export interface HeaderActionState {
   headerActions: HeaderAction[];
   headerActionsProcessors: HeaderActionsProcessor[];
   appBarActions: AppBarAction[];
   appBarActionsProcessors: AppBarActionsProcessor[];
+  resourceActionProviders: ResourceActionProvider[];
 }
 const initialState: HeaderActionState = {
   headerActions: [],
   headerActionsProcessors: [],
   appBarActions: [],
   appBarActionsProcessors: [],
+  resourceActionProviders: [],
 };
 
 /**
@@ -164,6 +179,10 @@ export const actionButtonsSlice = createSlice({
         _normalizeProcessor<AppBarActionsProcessor, AppBarActionsProcessor['processor']>(action)
       );
     },
+
+    addResourceActionProvider(state, action: PayloadAction<ResourceActionProvider>) {
+      state.resourceActionProviders.push(action.payload);
+    },
   },
 });
 
@@ -172,6 +191,7 @@ export const {
   addDetailsViewHeaderActionsProcessor,
   setAppBarAction,
   setAppBarActionsProcessor,
+  addResourceActionProvider,
 } = actionButtonsSlice.actions;
 
 export default actionButtonsSlice.reducer;
