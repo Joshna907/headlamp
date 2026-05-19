@@ -38,7 +38,29 @@ export function parseRam(value: string) {
 function parseUnitsOfBytes(value: string): number {
   if (!value) return 0;
 
-  const groups = value.match(/(\d+(?:\.\d+)?)([BKMGTPEe])?(i)?(\d+)?/) || [];
+  const trimmedValue = value.trim();
+
+  const fractionalUnits: Record<string, number> = {
+    m: 1e-3,
+    u: 1e-6,
+    n: 1e-9,
+    p: 1e-12,
+    f: 1e-15,
+    a: 1e-18,
+  };
+
+  const groups =
+    trimmedValue.match(/^([+-]?(?:\d+\.\d*|\.\d+|\d+))([BKMGTPEek])?(i)?([+-]?\d+)?$/) || [];
+  if (groups.length === 0) {
+    // Check for fractional units like 'm' (millibytes/units - unlikely but spec allows it for generic Quantity)
+    const fractionalGroups = trimmedValue.match(/^([+-]?(?:\d+\.\d*|\.\d+|\d+))([munpfa])$/) || [];
+    if (fractionalGroups.length > 0) {
+      const num = parseFloat(fractionalGroups[1]);
+      const unit = fractionalGroups[2];
+      return num * fractionalUnits[unit];
+    }
+    return Number.NaN;
+  }
   const number = parseFloat(groups[1]);
 
   // number ex. 1000
@@ -46,12 +68,28 @@ function parseUnitsOfBytes(value: string): number {
     return number;
   }
 
-  // number with exponent ex. 1e3
-  if (groups[4] !== undefined) {
-    return number * 10 ** parseInt(groups[4], 10);
+  // number with exponent ex. 1e3 or 1E3
+  // We prioritize scientific notation only if there is an exponent digit (groups[4])
+  // OR if the unit is explicitly 'e' (lowercase).
+  // If it's 'E' without an exponent, it's treated as Exabytes.
+  const isScientific =
+    (groups[2] === 'e' || groups[2] === 'E') && groups[4] !== undefined && groups[3] === undefined;
+
+  if (isScientific) {
+    const exponent = groups[4] ? parseInt(groups[4], 10) : 0;
+    return number * 10 ** exponent;
   }
 
-  const unitIndex = _.indexOf(UNITS, groups[2]);
+  const unit = groups[2];
+  const unitIndex = _.indexOf(UNITS, unit);
+
+  if (unitIndex === -1) {
+    // Handle lowercase 'k' which is common but not in our uppercase UNITS list
+    if (groups[2] === 'k') {
+      return number * 1000;
+    }
+    return Number.NaN;
+  }
 
   // Unit + i ex. 1Ki
   if (groups[3] !== undefined) {
@@ -78,10 +116,11 @@ export function unparseRam(value: number) {
 export function parseCpu(value: string) {
   if (!value) return 0;
 
-  const number = parseInt(value, 10);
-  if (value.endsWith('n')) return number;
-  if (value.endsWith('u')) return number * 1000;
-  if (value.endsWith('m')) return number * 1000 * 1000;
+  const trimmedValue = value.trim();
+  const number = parseFloat(trimmedValue);
+  if (trimmedValue.endsWith('n')) return number;
+  if (trimmedValue.endsWith('u')) return number * 1000;
+  if (trimmedValue.endsWith('m')) return number * 1000 * 1000;
   return number * 1000 * 1000 * 1000;
 }
 
