@@ -397,6 +397,10 @@ func (cacheStub) SetOnEvicted(callback func(key string, value interface{})) {
 	// No-op for stub
 }
 
+func (cacheStub) Close() error {
+	return nil
+}
+
 type fakeCache struct {
 	cacheStub
 	store    map[string]interface{}

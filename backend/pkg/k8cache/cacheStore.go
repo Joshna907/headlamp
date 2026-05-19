@@ -276,11 +276,14 @@ func StoreK8sResponseInCache(k8scache cache.Cache[string],
 
 // redactContextKey returns a redacted version of the context key to avoid leaking PII/sensitive info in logs.
 func redactContextKey(key string) string {
-	if len(key) <= 6 {
-		return key
+	if key == "" {
+		return ""
+	}
+	if len(key) <= 3 {
+		return "[redacted]"
 	}
 
-	return key[:6] + "...[redacted]"
+	return key[:3] + "...[redacted]"
 }
 
 // redactCacheKey returns a redacted version of the cache key (which contains the context key as its last segment).

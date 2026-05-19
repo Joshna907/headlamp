@@ -130,3 +130,13 @@ func SetTestingInFlightWait(fn func()) func() {
 		hookMu.Unlock()
 	}
 }
+
+// ExportedRedactContextKey exposes redactContextKey for testing.
+func ExportedRedactContextKey(key string) string {
+	return redactContextKey(key)
+}
+
+// ExportedRedactCacheKey exposes redactCacheKey for testing.
+func ExportedRedactCacheKey(key string) string {
+	return redactCacheKey(key)
+}

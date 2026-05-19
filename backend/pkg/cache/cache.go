@@ -34,6 +34,7 @@ type Cache[T any] interface {
 	GetAll(ctx context.Context, selectFunc Matcher) (map[string]T, error)
 	UpdateTTL(ctx context.Context, key string, ttl time.Duration) error
 	SetOnEvicted(f func(key string, value T))
+	Close() error
 }
 
 // Matcher is a function that returns true if the key matches.
@@ -208,6 +209,21 @@ func (c *cache[T]) UpdateTTL(ctx context.Context, key string, ttl time.Duration)
 	if value.expiresAt.IsZero() || value.expiresAt.After(time.Now()) {
 		value.expiresAt = time.Now().Add(ttl)
 		c.store[key] = value
+	}
+
+	return nil
+}
+
+// Close closes the cache and terminates the cleanup goroutine.
+func (c *cache[T]) Close() error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	select {
+	case <-c.stop:
+		// already closed
+	default:
+		close(c.stop)
 	}
 
 	return nil
